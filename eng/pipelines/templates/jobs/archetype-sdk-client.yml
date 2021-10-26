@@ -11,6 +11,9 @@ parameters:
   - name: Clouds
     type: string
     default: 'Public'
+  - name: EnvVars
+    type: object
+    default: {}
   - name: SupportedClouds
     type: string
     default: 'Public,UsGov,China'
