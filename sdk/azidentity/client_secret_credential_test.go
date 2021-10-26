@@ -139,15 +139,18 @@ func TestClientSecretCredential_GetTokenUnexpectedJSON(t *testing.T) {
 }
 
 func TestClientSecretCredential_Live(t *testing.T) {
-	clientID := os.Getenv("IDENTITY_SP_CLIENT_ID")
-	tenantID := os.Getenv("IDENTITY_SP_TENANT_ID")
-	secret := os.Getenv("IDENTITY_SP_CLIENT_SECRET")
-	for _, v := range []string{clientID, tenantID, secret} {
-		if v == "" {
-			t.Skipf("no value for %s", v)
-		}
+	clientID, ok := os.LookupEnv("IDENTITY_SP_CLIENT_ID")
+	if !ok {
+		t.Fatal("no value for IDENTITY_SP_CLIENT_ID")
 	}
-
+	tenantID, ok := os.LookupEnv("IDENTITY_SP_TENANT_ID")
+	if !ok {
+		t.Fatal("no value for IDENTITY_SP_TENANT_ID")
+	}
+	secret, ok := os.LookupEnv("IDENTITY_SP_CLIENT_SECRET")
+	if !ok {
+		t.Fatal("no value for IDENTITY_SP_CLIENT_SECRET")
+	}
 	cred, err := NewClientSecretCredential(tenantID, clientID, secret, nil)
 	if err != nil {
 		t.Fatalf("failed to construct credential: %v", err)
