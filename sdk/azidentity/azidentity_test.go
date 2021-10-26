@@ -20,6 +20,23 @@ const (
 	accessTokenRespMalformed = `{"access_token": 0, "expires_in": 3600}`
 )
 
+// service principal details for live tests
+var liveSP = struct{
+	tenantID string
+	clientID string
+	secret string
+	pemPath string
+	pfxPath string
+	sniPath string
+}{
+	tenantID: os.Getenv("IDENTITY_SP_TENANT_ID"),
+	clientID: os.Getenv("IDENTITY_SP_CLIENT_ID"),
+	secret: os.Getenv("IDENTITY_SP_CLIENT_SECRET"),
+	pemPath: os.Getenv("IDENTITY_SP_CERT_PEM"),
+	pfxPath: os.Getenv("IDENTITY_SP_CERT_PFX"),
+	sniPath: os.Getenv("IDENTITY_SP_CERT_SNI"),
+}
+
 func defaultTestPipeline(srv policy.Transporter, cred azcore.TokenCredential, scope string) runtime.Pipeline {
 	retryOpts := policy.RetryOptions{
 		MaxRetryDelay: 500 * time.Millisecond,

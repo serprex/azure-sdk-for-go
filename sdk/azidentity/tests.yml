@@ -1,31 +1,24 @@
-# NOTE: Please refer to https://aka.ms/azsdk/engsys/ci-yaml before editing this file.
-trigger:
-  branches:
-    include:
-      - main
-      - feature/*
-      - hotfix/*
-      - release/*
-  paths:
-    include:
-    - sdk/azidentity/
+trigger: none
 
-pr:
-  branches:
-    include:
-      - main
-      - feature/*
-      - hotfix/*
-      - release/*
-  paths:
-    include:
-    - sdk/azidentity/
+# resources:
+#   containers:
+#     - container: 'ubuntu_netcore_keyring'
+#       image: 'azsdkengsys.azurecr.io/dotnet/ubuntu_netcore50401_keyring:powershell714focalnet50401.4'
+#       endpoint: 'azsdkengsys'
+#       options: -ti --cap-add=IPC_LOCK
 
-stages:
-- template: /eng/pipelines/templates/jobs/archetype-sdk-client.yml
+extends:
+  # template: /eng/pipelines/templates/stages/archetype-sdk-tests.yml
+  template: /eng/pipelines/templates/jobs/live.tests.yml
   parameters:
-    RunLiveTests: true
-    ServiceDirectory: 'azidentity'
+    TimeoutInMinutes: 120
+    # AdditionalMatrixConfigs:
+    #   - Name: identity_container
+    #     Path: sdk/identity/platform-matrix.json
+    #     Selection: sparse
+    #     GenerateContainerJobs: true
+    # ServiceDirectory: identity
+    # SupportedClouds: 'Public,UsGov,China,Canary'
     PreSteps:
       # - pwsh: Install-Module -Name Az -Scope CurrentUser -AllowClobber -Force -Verbose
       #   displayName: Install Azure PowerShell module

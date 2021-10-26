@@ -9,7 +9,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/internal/mock"
@@ -133,5 +135,32 @@ func TestClientSecretCredential_GetTokenUnexpectedJSON(t *testing.T) {
 	_, err = cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{scope}})
 	if err == nil {
 		t.Fatalf("Expected a JSON marshal error but received nil")
+	}
+}
+
+func TestClientSecretCredential_Live(t *testing.T) {
+	clientID := os.Getenv("IDENTITY_SP_CLIENT_ID")
+	tenantID := os.Getenv("IDENTITY_SP_TENANT_ID")
+	secret := os.Getenv("IDENTITY_SP_CLIENT_SECRET")
+	for _, v := range []string{clientID, tenantID, secret} {
+		if v == "" {
+			t.Skipf("no value for %s", v)
+		}
+	}
+
+	cred, err := NewClientSecretCredential(tenantID, clientID, secret, nil)
+	if err != nil {
+		t.Fatalf("failed to construct credential: %v", err)
+	}
+
+	tk, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{"https://storage.azure.net/.default"}})
+	if err != nil {
+		t.Fatalf("GetToken failed: %v", err)
+	}
+	if tk.Token == "" {
+		t.Fatalf("GetToken returned an invalid token")
+	}
+	if !tk.ExpiresOn.After(time.Now().UTC()) {
+		t.Fatalf("GetToken returned an invalid expiration time")
 	}
 }

@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
@@ -317,5 +318,33 @@ func TestBearerPolicy_ClientCertificateCredential(t *testing.T) {
 	_, err = pipeline.Do(req)
 	if err != nil {
 		t.Fatalf("Expected nil error but received one")
+	}
+}
+
+func TestClientCertificateCredential_LivePEM(t *testing.T) {
+	for _, v := range []string{liveSP.tenantID, liveSP.clientID, liveSP.pemPath} {
+		if v == "" {
+			t.Skipf("no value for %s", v)
+		}
+	}
+
+	cert, err := os.ReadFile(liveSP.pemPath)
+	if err != nil {
+		t.Fatalf(`failed to read cert "%s": %v`, liveSP.pemPath, err)
+	}
+	cred, err := NewClientCertificateCredential(liveSP.tenantID, liveSP.clientID, cert, nil)
+	if err != nil {
+		t.Fatalf("failed to construct credential: %v", err)
+	}
+
+	tk, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{Scopes: []string{"https://storage.azure.net/.default"}})
+	if err != nil {
+		t.Fatalf("GetToken failed: %v", err)
+	}
+	if tk.Token == "" {
+		t.Fatalf("GetToken returned an invalid token")
+	}
+	if !tk.ExpiresOn.After(time.Now().UTC()) {
+		t.Fatalf("GetToken returned an invalid expiration time")
 	}
 }
